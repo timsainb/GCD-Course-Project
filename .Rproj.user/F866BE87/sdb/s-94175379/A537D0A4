@@ -1,0 +1,17 @@
+{
+    "contents" : "# Cleaning Data Script\n# Tasks\n# 1. Merge training and test sets to create one data set\n# 2. Extract only the measurements on the mean and standard deviation for each measurement\n# 3. Use descriptive activity names to name the activities in the dataset\n# 4. Appropriately label the deta set with descriptive variable names\n# 5. From the data set in step 4, create a second, independant tidy \n#     dataset with the average of each variable for each activity and each subject\n\n\ncreate_data_set <- function(directory) {\n# load test and train data\ntestdata = read.table(\"UCI HAR Dataset/test/X_test.txt\")\ntraindata = read.table(\"UCI HAR Dataset/train/X_train.txt\")\n# gets y values\nytest = read.table(\"UCI HAR Dataset/test/Y_test.txt\")\nytrain = read.table(\"UCI HAR Dataset/train/Y_train.txt\")\n#bind yvalues\nallY <- rbind(ytest, ytrain)\n# get descriptions for Y values\nydesc = read.table(\"UCI HAR Dataset/activity_labels.txt\")\nallY <- merge(allY, ydesc, by=\"V1\")\n\nsubject_test <- read.table(\"UCI HAR Dataset/test/subject_test.txt\")\nsubject_train <- read.table(\"UCI HAR Dataset/train/subject_train.txt\")\nallSubject <- rbind(subject_test, subject_train)\n\n#merge data together\nalldata <- rbind(testdata, traindata)\n\n#removes old data sets\nrm(testdata)\nrm(traindata)\n\n#gives names to features\nnamesOfFeatures = read.table(\"UCI HAR Dataset/features.txt\")\ncolnames(alldata) <- namesOfFeatures$V2\n\n#finds columns which contain the words mean, or std\ncolumnsToExtract <- grep(\"mean|std\",colnames(alldata))\n\n#creates new data with only columns that have mean of std\nalldata <- alldata[,columnsToExtract]\n\n#applies column names\ncolnames(alldata) <- namesOfFeatures$V2[columnsToExtract]\n\n# Appends Activity Type and Number to data\nalldata$ActivityNumber <- allY$V1\nalldata$ActivityType <- allY$V2\nalldata$Subject <- allSubject$V1\n\nreturn (alldata)\n}\n\n# creates new tidy dataset with average of each variable for each activity and each subject\ntidydataset <- function(dataset) {\n    \n  #splitDataSet <- split(dataset, list(dataset$ActivityNumber,dataset$Subject))\n  \n  require(reshape2)\n  melted_data <- melt(dataset, id=c(\"Subject\",\"ActivityNumber\",\"ActivityType\"))\n  \n  # cast data into tidy data format\n  tidy_data <- dcast(melted_data, formula = Subject + ActivityNumber + ActivityVariable ~ variable, mean)\n  \n  write.table(tidy_data, file=\"./tidy_data.txt\")\n}\n\n\n",
+    "created" : 1417974253896.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3772135880",
+    "id" : "A537D0A4",
+    "lastKnownWriteTime" : 1417984576,
+    "path" : "~/Documents/Coursera/Getting And Cleaning Data/Course Project/run_analysis.R",
+    "project_path" : "run_analysis.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
